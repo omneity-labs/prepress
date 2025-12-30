@@ -1,0 +1,15 @@
+[package]
+name = "rust-complex"
+version = "0.5.0"
+edition = "2021"
+authors = ["Omar <omar@example.com>"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+
+[dev-dependencies]
+tempfile = "3.3"
+
+[workspace]
+members = ["crates/*"]

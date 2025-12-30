@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prepress (pps) | Modern Polyglot Release Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
+                <span class="text-xl font-bold tracking-tight">Prepress <span class="text-slate-400 font-mono text-sm ml-1">pps</span></span>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="https://github.com/omneity-labs/prepress/blob/main/GUIDE.md" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Guide</a>
+                <a href="https://github.com/omneity-labs/prepress" class="text-slate-900 hover:text-blue-600 transition-colors">
+                    <i class="fab fa-github text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
+        <div class="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide text-blue-600 uppercase bg-blue-50 rounded-full">
+            v0.1.0 is out
+        </div>
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
+            Ship software <span class="gradient-text">without the stress.</span>
+        </h1>
+        <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Prepress (pps) is a modern, polyglot release management tool that makes versioning and changelogs boring and predictable.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <code class="bg-slate-900 text-slate-100 px-6 py-3 rounded-lg font-mono text-sm flex items-center justify-center">
+                uv tool install prepress
+            </code>
+            <a href="https://github.com/omneity-labs/prepress" class="bg-white border border-slate-200 px-6 py-3 rounded-lg font-semibold hover:bg-slate-50 transition-colors flex items-center justify-center">
+                <i class="fab fa-github mr-2"></i> View on GitHub
+            </a>
+        </div>
+    </header>
+
+    <!-- Features Grid -->
+    <section class="max-w-5xl mx-auto px-6 py-20">
+        <div class="grid md:grid-cols-3 gap-12">
+            <div>
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6">
+                    <i class="fas fa-language text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Polyglot by Design</h3>
+                <p class="text-slate-600 leading-relaxed">
+                    Native support for Python (pyproject.toml), Rust (Cargo.toml), and Node.js (package.json). One tool for all your projects.
+                </p>
+            </div>
+            <div>
+                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-6">
+                    <i class="fas fa-book-open text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Changelog First</h3>
+                <p class="text-slate-600 leading-relaxed">
+                    Uses your CHANGELOG.md as the single source of truth. No more messy auto-generated release notes from commit logs.
+                </p>
+            </div>
+            <div>
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-6">
+                    <i class="fas fa-shield-alt text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Trusted Publishing</h3>
+                <p class="text-slate-600 leading-relaxed">
+                    Automated scaffolding for GitHub Actions using OIDC. Securely publish to PyPI, npm, or crates.io with zero secrets.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Preview -->
+    <section class="bg-slate-900 py-24">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-700">
+                <div class="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-slate-700">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span class="ml-2 text-xs text-slate-400 font-mono">terminal — pps status</span>
+                </div>
+                <div class="p-6 font-mono text-sm leading-relaxed">
+                    <div class="text-slate-400 mb-2">$ pps status</div>
+                    <div class="text-blue-400">Prepress Status</div>
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <div class="text-slate-300">Manifest Version</div><div class="text-emerald-400">0.1.0</div>
+                        <div class="text-slate-300">Changelog Latest</div><div class="text-emerald-400">0.1.0</div>
+                        <div class="text-slate-300">Unreleased Notes</div><div class="text-emerald-400">Yes</div>
+                        <div class="text-slate-300">Git Status</div><div class="text-emerald-400">Clean</div>
+                    </div>
+                    <div class="text-blue-400 mt-6">Ready to bump. Run 'pps bump'.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Commands Overview -->
+    <section class="max-w-5xl mx-auto px-6 py-20 border-t border-slate-100">
+        <h2 class="text-3xl font-bold mb-12 text-center">Simple to use</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <code class="text-blue-600 font-bold mb-2 block">pps init</code>
+                <p class="text-slate-600 text-sm">Initialize Prepress in your project. Creates a CHANGELOG.md and scaffolds GitHub Actions for Trusted Publishing.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <code class="text-blue-600 font-bold mb-2 block">pps note "..."</code>
+                <p class="text-slate-600 text-sm">Quickly add a note to the [Unreleased] section of your changelog without opening an editor.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <code class="text-blue-600 font-bold mb-2 block">pps status</code>
+                <p class="text-slate-600 text-sm">Check the health of your project: version consistency, unreleased notes, and git state.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <code class="text-blue-600 font-bold mb-2 block">pps bump [patch|minor|major]</code>
+                <p class="text-slate-600 text-sm">Bumps the version in your manifest and moves [Unreleased] notes to a new version section in the changelog.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <code class="text-blue-600 font-bold mb-2 block">pps preview</code>
+                <p class="text-slate-600 text-sm">See exactly what the next release will look like, including the version and the release notes.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <code class="text-blue-600 font-bold mb-2 block">pps release</code>
+                <p class="text-slate-600 text-sm">The final step: tags the commit and pushes to GitHub, triggering your automated publishing workflow.</p>
+            </div>
+        </div>
+        <div class="mt-12 text-center">
+            <a href="https://github.com/omneity-labs/prepress/blob/main/GUIDE.md" class="text-blue-600 font-semibold hover:underline">
+                Read the full User Guide <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="max-w-5xl mx-auto px-6 py-20 text-center border-t border-slate-200">
+        <p class="text-slate-500 mb-4">
+            A project by  <a href="https://omarkamali.com" class="text-slate-900 font-semibold hover:underline">Omar Kamali</a>
+        </p>
+        <p class="text-slate-400 text-sm">
+            <a href="https://omneitylabs.com" class="hover:underline font-semibold text-slate-600"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=omneitylabs.com" alt="" class="w-6 rounded-full inline" />
+            Omneity Labs</a> • MIT License
+        </p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+[project]
+name = "prepress"
+version = "0.1.0"
+description = "A modern, polyglot release management tool"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Omar Kamali", email = "prepress@omneitylabs.com" }
+]
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "tomli>=2.0.1; python_version < '3.11'",
+    "libcst>=1.1.0",
+    "semver>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://omneity-labs.github.io/prepress/"
+Repository = "https://github.com/omneity-labs/prepress"
+Documentation = "https://github.com/omneity-labs/prepress/blob/main/GUIDE.md"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+pps = "prepress.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/prepress"]

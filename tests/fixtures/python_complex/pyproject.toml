@@ -1,0 +1,18 @@
+[project]
+name = "complex-pkg"
+version = "1.2.3"
+description = "A complex project"
+dependencies = [
+    "requests>=2.25.1",
+    "typer==0.9.0"
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.hatch.version]
+path = "src/complex_pkg/__init__.py"
+
+[tool.ruff]
+line-length = 88
+# version = "0.1.0" # This should not be bumped
