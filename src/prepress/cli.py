@@ -219,10 +219,18 @@ def release():
     tag = f"v{version}"
     if Confirm.ask(f"Create tag [bold cyan]{tag}[/bold cyan] and push?"):
         try:
-            run_cmd(["git", "tag", "-a", tag, "-m", f"Release {tag}"])
+            # Check if tag already exists
+            tag_exists = run_cmd(["git", "tag", "-l", tag]).stdout.strip() == tag
+            if tag_exists:
+                console.print(f"[yellow]Tag {tag} already exists.[/yellow]")
+                if not Confirm.ask("Use existing tag and proceed?"):
+                    return
+            else:
+                run_cmd(["git", "tag", "-a", tag, "-m", f"Release {tag}"])
+            
             run_cmd(["git", "push", "origin", "main"]) # Assume main for now
             run_cmd(["git", "push", "origin", tag])
-            console.print(f"[green]✓ Tag {tag} created and pushed.[/green]")
+            console.print(f"[green]✓ Tag {tag} pushed.[/green]")
         except subprocess.CalledProcessError as e:
             console.print(f"[red]Git error: {e.stderr}[/red]")
             return

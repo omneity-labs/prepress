@@ -88,3 +88,32 @@ def test_cli_default_no_manifest(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert "No manifest found" in result.output
     assert "pyproject.toml" in result.output
+
+def test_cli_release_tag_exists(mock_repo, monkeypatch):
+    monkeypatch.chdir(mock_repo)
+    with patch("rich.prompt.Confirm.ask") as mock_confirm, \
+         patch("prepress.cli.run_cmd") as mock_run:
+        
+        # 1. Confirm tag and push? -> True
+        # 2. Tag exists? -> True (Skip tagging and proceed?) -> True
+        # 3. Create GitHub Release? -> True
+        mock_confirm.side_effect = [True, True, True]
+        
+        def side_effect(cmd, **kwargs):
+            if cmd == ["git", "tag", "-l", "v0.1.0"]:
+                return MagicMock(stdout="v0.1.0\n")
+            return MagicMock(returncode=0, stdout="")
+            
+        mock_run.side_effect = side_effect
+        
+        result = runner.invoke(app, ["release"])
+        assert result.exit_code == 0
+        assert "Tag v0.1.0 already exists." in result.output
+        
+        # Verify git tag -a was NOT called
+        for call in mock_run.call_args_list:
+            assert call.args[0] != ["git", "tag", "-a", "v0.1.0", "-m", "Release v0.1.0"]
+        
+        # Verify push was still called
+        mock_run.assert_any_call(["git", "push", "origin", "main"])
+        mock_run.assert_any_call(["git", "push", "origin", "v0.1.0"])

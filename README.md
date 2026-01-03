@@ -2,6 +2,8 @@
 
 A modern, polyglot release management tool for Python, Rust, and Node.js projects.
 
+*prepress is dogfooding its own release management!*
+
 [**View Website**](https://omneity-labs.github.io/prepress/)
 
 ## Features
