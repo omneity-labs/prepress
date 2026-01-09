@@ -47,6 +47,14 @@ def test_cli_bump(mock_repo, monkeypatch):
         assert 'version = "0.2.0"' in (mock_repo / "pyproject.toml").read_text()
         assert "## [0.2.0]" in (mock_repo / "CHANGELOG.md").read_text()
 
+def test_cli_bump_auto_approve(mock_repo, monkeypatch):
+    monkeypatch.chdir(mock_repo)
+    result = runner.invoke(app, ["-y", "bump", "minor"])
+    assert result.exit_code == 0
+    assert "auto-approved" in result.output
+    assert "0.2.0" in result.output
+    assert 'version = "0.2.0"' in (mock_repo / "pyproject.toml").read_text()
+
 def test_cli_preview(mock_repo, monkeypatch):
     monkeypatch.chdir(mock_repo)
     result = runner.invoke(app, ["preview"])
@@ -89,15 +97,35 @@ def test_cli_default_no_manifest(tmp_path, monkeypatch):
     assert "No manifest found" in result.output
     assert "pyproject.toml" in result.output
 
-def test_cli_release_tag_exists(mock_repo, monkeypatch):
+def test_cli_release_branch_detection(mock_repo, monkeypatch):
     monkeypatch.chdir(mock_repo)
-    with patch("rich.prompt.Confirm.ask") as mock_confirm, \
+    with patch("rich.prompt.Confirm.ask", return_value=True), \
          patch("prepress.cli.run_cmd") as mock_run:
         
-        # 1. Confirm tag and push? -> True
-        # 2. Tag exists? -> True (Skip tagging and proceed?) -> True
-        # 3. Create GitHub Release? -> True
-        mock_confirm.side_effect = [True, True, True]
+        # Configure mock_run side effects for multiple calls
+        def side_effect(cmd, **kwargs):
+            if cmd == ["git", "rev-parse", "--abbrev-ref", "HEAD"]:
+                return MagicMock(stdout="feature-branch")
+            if cmd == ["git", "config", "branch.feature-branch.remote"]:
+                return MagicMock(stdout="upstream")
+            if cmd == ["git", "tag", "-l", "v0.1.0"]:
+                return MagicMock(stdout="")
+            return MagicMock(returncode=0, stdout="")
+            
+        mock_run.side_effect = side_effect
+        
+        result = runner.invoke(app, ["release"])
+        assert result.exit_code == 0
+        
+        # Verify it pushed to the correct branch and remote
+        mock_run.assert_any_call(["git", "push", "upstream", "feature-branch"], capture=False)
+        mock_run.assert_any_call(["git", "push", "upstream", "v0.1.0"], capture=False)
+        assert "Pushing to upstream/feature-branch" in result.output
+
+def test_cli_release_tag_exists(mock_repo, monkeypatch):
+    monkeypatch.chdir(mock_repo)
+    with patch("rich.prompt.Confirm.ask", return_value=True), \
+         patch("prepress.cli.run_cmd") as mock_run:
         
         def side_effect(cmd, **kwargs):
             if cmd == ["git", "tag", "-l", "v0.1.0"]:
@@ -113,7 +141,16 @@ def test_cli_release_tag_exists(mock_repo, monkeypatch):
         # Verify git tag -a was NOT called
         for call in mock_run.call_args_list:
             assert call.args[0] != ["git", "tag", "-a", "v0.1.0", "-m", "Release v0.1.0"]
+
+def test_cli_release_auto_approve(mock_repo, monkeypatch):
+    monkeypatch.chdir(mock_repo)
+    with patch("prepress.cli.run_cmd") as mock_run:
+        # No mock for Confirm.ask needed because of -y
+        mock_run.return_value = MagicMock(returncode=0, stdout="main\n")
         
-        # Verify push was still called
-        mock_run.assert_any_call(["git", "push", "origin", "main"])
-        mock_run.assert_any_call(["git", "push", "origin", "v0.1.0"])
+        result = runner.invoke(app, ["-y", "release"])
+        assert result.exit_code == 0
+        assert "auto-approved" in result.output
+        assert "Releasing v0.1.0" in result.output
+        # Verify it pushed - branch and remote will both be "main" based on our mock's return value
+        mock_run.assert_any_call(["git", "push", "main", "main"], capture=False)

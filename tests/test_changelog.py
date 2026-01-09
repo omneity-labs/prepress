@@ -64,3 +64,26 @@ def test_bump(tmp_path):
     assert "- Feature X" in content
     # Check order: Unreleased should be at top
     assert content.find("## [Unreleased]") < content.find("## [1.1.0]")
+
+def test_add_note_anchoring_above_version(tmp_path):
+    path = tmp_path / "CHANGELOG.md"
+    content = """# Changelog
+
+Intro text.
+
+## [1.0.0] - 2023-01-01
+"""
+    path.write_text(content)
+    driver = ChangelogDriver(path)
+    driver.add_note("New note", "Added")
+    
+    new_content = path.read_text()
+    assert "## [Unreleased]" in new_content
+    intro_pos = new_content.find("Intro text.")
+    unreleased_pos = new_content.find("## [Unreleased]")
+    v100_pos = new_content.find("## [1.0.0]")
+    
+    assert intro_pos < unreleased_pos
+    assert unreleased_pos < v100_pos
+    assert "### Added" in new_content
+    assert "- New note" in new_content

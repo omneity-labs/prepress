@@ -56,17 +56,37 @@ class ChangelogDriver:
         content = self.path.read_text()
         if "## [Unreleased]" not in content:
             # Create Unreleased section if missing
-            content = content.replace("# Changelog\n", f"# Changelog\n\n## [Unreleased]\n\n### Added\n")
+            # Try to anchor it above the first version found
+            version_match = re.search(r'## \[v?\d+\.\d+\.\d+\]', content)
+            if version_match:
+                index = version_match.start()
+                content = content[:index] + "## [Unreleased]\n\n" + content[index:]
+            else:
+                # Fallback to after the title if no versions found
+                if "# Changelog" in content:
+                    content = content.replace("# Changelog", "# Changelog\n\n## [Unreleased]", 1)
+                else:
+                    content = "## [Unreleased]\n\n" + content
         
         section_header = f"### {section}"
-        if section_header not in content:
-            # Add section under Unreleased
-            unreleased_match = re.search(r'## \[Unreleased\]\s*', content)
-            if unreleased_match:
+        # Ensure section header exists specifically in the Unreleased section
+        unreleased_match = re.search(r'## \[Unreleased\]', content)
+        if unreleased_match:
+            unreleased_end_match = re.search(r'\n## \[', content[unreleased_match.end():])
+            unreleased_end = unreleased_match.end() + unreleased_end_match.start() if unreleased_end_match else len(content)
+            unreleased_block = content[unreleased_match.start():unreleased_end]
+            
+            if section_header not in unreleased_block:
+                # Add section under Unreleased
                 pos = unreleased_match.end()
-                content = content[:pos] + f"\n{section_header}\n" + content[pos:]
+                content = content[:pos].rstrip() + f"\n\n{section_header}\n\n" + content[pos:].lstrip()
         
-        # Append note to section
+        # Append note to the first occurrence of the section header
         section_pattern = rf'({re.escape(section_header)}\s*)'
         new_content = re.sub(section_pattern, rf'\1- {message}\n', content, count=1)
+        
+        # Ensure there's a newline before the next header if we just appended to the end of Unreleased
+        if re.search(rf'- {re.escape(message)}\n## \[', new_content):
+            new_content = new_content.replace(f"- {message}\n## [", f"- {message}\n\n## [")
+
         self.path.write_text(new_content)

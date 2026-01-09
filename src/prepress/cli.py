@@ -32,7 +32,7 @@ def version():
     console.print(f"Prepress [bold cyan]v{__version__}[/bold cyan]")
 
 @app.command()
-def init():
+def init(ctx: typer.Context):
     """Initialize the project for Prepress."""
     root = Path.cwd()
     console.print("[bold blue]🚀 Initializing Prepress...[/bold blue]")
@@ -40,7 +40,7 @@ def init():
     # 1. Changelog
     changelog = ChangelogDriver(root / "CHANGELOG.md")
     if not changelog.exists():
-        if Confirm.ask("CHANGELOG.md missing. Create it?"):
+        if confirm("CHANGELOG.md missing. Create it?", ctx):
             template = (Path(__file__).parent / "templates" / "CHANGELOG.md").read_text()
             (root / "CHANGELOG.md").write_text(template)
             console.print("[green]✓ Created CHANGELOG.md[/green]")
@@ -59,7 +59,7 @@ def init():
                     
                     content = init_py.read_text()
                     if "__version__" in content and "importlib.metadata" not in content:
-                        if Confirm.ask(f"Modernize versioning in {init_py.relative_to(root)}?"):
+                        if confirm(f"Modernize versioning in {init_py.relative_to(root)}?", ctx):
                             # Actually get name from pyproject.toml
                             try:
                                 import tomllib
@@ -82,7 +82,7 @@ except PackageNotFoundError:
     # 3. GitHub Actions
     github_dir = root / ".github" / "workflows"
     if not (github_dir / "publish.yml").exists():
-        if Confirm.ask("Create GitHub Action for Trusted Publishing?"):
+        if confirm("Create GitHub Action for Trusted Publishing?", ctx):
             github_dir.mkdir(parents=True, exist_ok=True)
             if any(isinstance(d, PythonDriver) for d in drivers):
                 template = (Path(__file__).parent / "templates" / "python_publish.yml").read_text()
@@ -133,6 +133,7 @@ def preview():
 
 @app.command()
 def bump(
+    ctx: typer.Context,
     increment: str = typer.Argument(..., help="The version increment (patch, minor, major) or a specific version")
 ):
     """Bump the project version."""
@@ -166,7 +167,7 @@ def bump(
 
     console.print(f"Bumping version: [yellow]{current_v}[/yellow] -> [bold green]{new_v}[/bold green]")
     
-    if Confirm.ask("Proceed?"):
+    if confirm("Proceed with version bump?", ctx):
         for driver in drivers:
             driver.set_version(new_v)
         
@@ -179,11 +180,13 @@ def bump(
 
 import subprocess
 
-def run_cmd(cmd: list[str], check: bool = True):
-    return subprocess.run(cmd, check=check, capture_output=True, text=True)
+def run_cmd(cmd: list[str], check: bool = True, capture: bool = True):
+    if capture:
+        return subprocess.run(cmd, check=check, capture_output=True, text=True)
+    return subprocess.run(cmd, check=check)
 
 @app.command()
-def release():
+def release(ctx: typer.Context):
     """Tag and release the project."""
     root = Path.cwd()
     drivers = get_drivers(root)
@@ -215,28 +218,44 @@ def release():
         console.print("[red]Error: Working directory is not clean. Commit your changes first.[/red]")
         return
 
-    # 2. Tag
+    # 2. Tag and Push
     tag = f"v{version}"
-    if Confirm.ask(f"Create tag [bold cyan]{tag}[/bold cyan] and push?"):
+    
+    # Detect current branch and remote
+    branch = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"]).stdout.strip()
+    remote = "origin"
+    try:
+        # Try to get the remote for the current branch
+        remote_config = run_cmd(["git", "config", f"branch.{branch}.remote"], check=False).stdout.strip()
+        if remote_config:
+            remote = remote_config
+    except Exception:
+        pass
+
+    if confirm(f"Create tag [bold cyan]{tag}[/bold cyan] and push to [bold cyan]{remote}/{branch}[/bold cyan]?", ctx):
         try:
             # Check if tag already exists
             tag_exists = run_cmd(["git", "tag", "-l", tag]).stdout.strip() == tag
             if tag_exists:
                 console.print(f"[yellow]Tag {tag} already exists.[/yellow]")
-                if not Confirm.ask("Use existing tag and proceed?"):
+                if not confirm("Use existing tag and proceed?", ctx):
                     return
             else:
                 run_cmd(["git", "tag", "-a", tag, "-m", f"Release {tag}"])
             
-            run_cmd(["git", "push", "origin", "main"]) # Assume main for now
-            run_cmd(["git", "push", "origin", tag])
-            console.print(f"[green]✓ Tag {tag} pushed.[/green]")
+            console.print(f"Pushing to [bold cyan]{remote}/{branch}[/bold cyan]...")
+            run_cmd(["git", "push", str(remote), str(branch)], capture=False)
+            run_cmd(["git", "push", str(remote), str(tag)], capture=False)
+            console.print(f"[green]✓ Tag {tag} pushed to {remote}/{branch}.[/green]")
         except subprocess.CalledProcessError as e:
-            console.print(f"[red]Git error: {e.stderr}[/red]")
+            if e.stderr:
+                console.print(f"[red]Git error: {e.stderr}[/red]")
+            else:
+                console.print(f"[red]Git error: Command failed with exit code {e.returncode}[/red]")
             return
 
     # 3. GitHub Release
-    if Confirm.ask("Create GitHub Release?"):
+    if confirm("Create GitHub Release?", ctx):
         try:
             # Check if gh is installed
             run_cmd(["which", "gh"])
@@ -306,9 +325,21 @@ def status():
     elif not unreleased and version != latest_ch:
         console.print("[blue]Ready to release. Run 'pps release'.[/blue]")
 
+def confirm(question: str, ctx: typer.Context) -> bool:
+    if ctx.obj.get("yes"):
+        console.print(f"{question} [bold green](auto-approved)[/bold green]")
+        return True
+    return Confirm.ask(question)
+
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context):
+def main(
+    ctx: typer.Context,
+    yes: bool = typer.Option(False, "--yes", "-y", help="Auto-approve all prompts"),
+):
     """Prepress: A modern, polyglot release management tool."""
+    ctx.ensure_object(dict)
+    ctx.obj["yes"] = yes
+    
     if ctx.invoked_subcommand is not None:
         return
 
