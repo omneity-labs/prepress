@@ -38,3 +38,14 @@ def test_cli_init_modernize_init(tmp_path, monkeypatch):
         content = init_py.read_text()
         assert "importlib.metadata" in content
         assert 'version("test-pkg")' in content
+
+
+def test_cli_init_go_creates_ci(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "go.mod").write_text("module example.com/test\n\ngo 1.22\n")
+
+    with patch("rich.prompt.Confirm.ask", return_value=True):
+        result = runner.invoke(app, ["init"])
+        assert result.exit_code == 0
+        assert (tmp_path / "CHANGELOG.md").exists()
+        assert (tmp_path / ".github" / "workflows" / "go_ci.yml").exists()

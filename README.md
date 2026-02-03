@@ -1,6 +1,6 @@
 # Prepress (`pps`)
 
-A modern, polyglot release management tool for Python, Rust, and Node.js projects.
+A modern, polyglot release management tool for Python, Rust, Node.js, and Go projects.
 
 *prepress is dogfooding its own release management!*
 
@@ -8,9 +8,13 @@ A modern, polyglot release management tool for Python, Rust, and Node.js project
 
 ## Features
 - **Changelog-Centric**: Uses `CHANGELOG.md` as the source of truth.
-- **Polyglot**: Supports `pyproject.toml`, `Cargo.toml`, and `package.json`.
-- **Trusted Publishing**: Scaffolds GitHub Actions for secure OIDC-based publishing.
+- **Polyglot**: Supports `pyproject.toml`, `Cargo.toml`, `package.json`, and `go.mod`.
+- **Trusted Publishing**: Scaffolds GitHub Actions for secure OIDC-based publishing (PyPI/npm/crates.io).
 - **Safety**: AST-based version injection and robust dry-run previews.
+
+### Go projects
+Go modules don't have a standard version field in `go.mod`, so Prepress uses git tags (e.g. `v1.2.3`) as is [standard practice](https://go.dev/blog/publishing-go-modules) in the Go ecosystem.
+Run `pps init` to scaffold a minimal Go CI workflow (along with `CHANGELOG.md`).
 
 ## Installation
 ```bash

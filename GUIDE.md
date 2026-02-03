@@ -8,6 +8,7 @@ Prepress is a release management tool designed to make shipping software boring 
 **The Onboarding.** Run this once per project.
 - Creates a `CHANGELOG.md` if you don't have one.
 - Offers to modernize your Python `__init__.py` to use `importlib.metadata`.
+- For Go modules (`go.mod`), offers to create a Go CI workflow (tests/build).
 - Scaffolds `.github/workflows/publish.yml` for Trusted Publishing (OIDC).
 
 ### `pps note "<message>"`
@@ -18,12 +19,12 @@ Prepress is a release management tool designed to make shipping software boring 
 
 ### `pps status`
 **The Reality Check.**
-- Compares your manifest version (`pyproject.toml`, `Cargo.toml`, etc.) with your changelog.
+- Compares your manifest version (`pyproject.toml`, `Cargo.toml`, `package.json`, or git tags for Go) with your changelog.
 - Tells you if you have unreleased notes waiting to be shipped.
 
 ### `pps bump [patch|minor|major|<version>]`
 **The Preparation.**
-- Updates your version strings across all manifests.
+- Updates your version strings across all manifests (for Go, creates a local git tag).
 - Moves your `[Unreleased]` notes into a new versioned section with today's date.
 - Commits the changes with a clean message.
 

@@ -7,6 +7,7 @@ from prepress import __version__
 from prepress.core.drivers.python import PythonDriver
 from prepress.core.drivers.rust import RustDriver
 from prepress.core.drivers.node import NodeDriver
+from prepress.core.drivers.go import GoDriver
 from prepress.core.drivers.changelog import ChangelogDriver
 
 app = typer.Typer(
@@ -24,6 +25,8 @@ def get_drivers(root: Path):
         drivers.append(RustDriver(root))
     if NodeDriver(root).detect():
         drivers.append(NodeDriver(root))
+    if GoDriver(root).detect():
+        drivers.append(GoDriver(root))
     return drivers
 
 @app.command()
@@ -78,6 +81,17 @@ except PackageNotFoundError:
 """
                             init_py.write_text(new_content)
                             console.print(f"[green]✓ Modernized {init_py.relative_to(root)}[/green]")
+
+    # Go projects: scaffold CI (no trusted publishing)
+    if any(isinstance(d, GoDriver) for d in drivers):
+        github_dir = root / ".github" / "workflows"
+        go_ci_path = github_dir / "go_ci.yml"
+        if not go_ci_path.exists():
+            if confirm("Create Go CI workflow (tests/build)?", ctx):
+                github_dir.mkdir(parents=True, exist_ok=True)
+                template = (Path(__file__).parent / "templates" / "go_ci.yml").read_text()
+                go_ci_path.write_text(template)
+                console.print("[green]✓ Created .github/workflows/go_ci.yml[/green]")
 
     # 3. GitHub Actions
     github_dir = root / ".github" / "workflows"
@@ -353,6 +367,7 @@ def main(
         console.print("  - [cyan]pyproject.toml[/cyan] (Python)")
         console.print("  - [cyan]Cargo.toml[/cyan] (Rust)")
         console.print("  - [cyan]package.json[/cyan] (Node.js)")
+        console.print("  - [cyan]go.mod[/cyan] (Go; uses git tags)")
         console.print("\n[dim]Example: Create a pyproject.toml to get started.[/dim]")
         raise typer.Exit(0)
 
